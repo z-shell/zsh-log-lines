@@ -1,0 +1,48 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt localoptions noxtrace
+
+zparseopts -D -E -- \
+    -exit=exit \
+    -lines:=lines
+
+(( $+lines[1] )) && lines=${lines[2]} || lines=3
+
+# log-error $functrace
+# log-error $funcsourcetrace
+# log-error $funcfiletrace
+# log-error $funcstack
+for step in ${(Oa)funcfiletrace} ; do
+    [[ $step =~ "log-cmd" ]] && continue
+    step_line=${step#*:}
+    step_path=${step%:*}
+
+    if [[ -f "${step_path}" ]] {
+        step_content=(cat $step_path)
+    } elif (( $+functions[$step_path] )) {
+        step_content=(echo "$(which $step_path)")
+    }
+    lines_start=$((step_line-lines))
+    lines_start=$(( lines_start >= 1 ? lines_start : 1 ))
+    lines_end=$((step_line+lines))
+    stack=$(
+        $step_content \
+        | nl -ba -s'   ' \
+        | sed -n -e "$lines_start,$lines_end"p \
+        | sed -e "s/   $step_line\(.*\)/%B%F{red}-> $step_line\1%b%F{red}/"
+    )
+
+    local line="$($step_content | sed -n -e "$step_line,$step_line"p)"
+    local locals=''
+    while [[ "${line}" =~ '(\$\{?[[:alnum:]_@]+\}?)' ]] {
+        line="${line:$MEND}"
+        [[ $match =~ '\$[@0-9]' ]] && continue
+        locals+="      ${(r:20:: :)match}= ${(e)match}\n"
+    }
+    [[ "$locals" ]] && locals="    env:\n$locals\n"
+
+    log-error --arrow-color yellow "$step_path:$step_line\n$stack\n$locals"
+    first=' '
+done
+
+[[ $exit ]] && exit $__exit_status__

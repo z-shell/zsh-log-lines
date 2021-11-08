@@ -1,0 +1,150 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt \
+  LOCALOPTIONS \
+  NO_XTRACE \
+  ERR_RETURN \
+  NO_UNSET \
+  PIPE_FAIL
+
+zparseopts -A opts -D -E -- \
+    -fd: u: \
+    -bold \
+    -color: -auto-color: \
+    -no-arrow \
+    -arrow: -arrow-bold -arrow-color: \
+    -decor: -decor-bold -decor-color: \
+    -label: -label-bold -label-color: \
+    -interlog: \
+    -label-justify: \
+    -icon: \
+    -nl -number-lines \
+    -file:
+
+typeset -l \
+    arrow="${opts[arrow]:-"  -->"}" \
+    arrow_bold="${opts[arrow-bold]:-}" \
+    arrow_color="${opts[arrow-color]:-"magenta"}" \
+    no_arrow="${opts[no-arrow]:-}" \
+    decor="${opts[decor]:-" "}" \
+    decor_bold='%B' \
+    decor_color="${opts[decor-color]:-" "}" \
+    label="${opts[label]:-""}" \
+    label_bold="${opts[label-bold]:-}" \
+    label_color="${opts[label-color]:-"white"}" \
+    label_justify=${opts[label-justify]:-'(r:10:: :)'} \
+    _label='\${${label_justify}label}' \
+    interlog="${opts[interlog]:-""}" \
+    interlog_color='' \
+    message="$@" \
+    message_bold="${opts[message_bold]:-}" \
+    message_color="${opts[message-color]:-"white"}" \
+    auto_color=${opts[auto-color]:-"auto"} \
+    icon="${opts[icon]:-}" \
+    to_print=() \
+    file="${opts[file]:-}" \
+    nl_seperator=' > '
+
+typeset -i -l \
+    fdn="${opts[u]:-${opts[fd]:-2}}" \
+    use_color=0 \
+    file_only=0 \
+    number_lines=${opts[nl]:-${opts[number-lines]:-0}} \
+
+# convert paths to numeric fds
+[[ "$fdn" == /dev/stdout ]] && fdn=1
+[[ "$fdn" == /dev/stderr ]] && fdn=2
+
+# setup colors
+case "$auto_color" {
+  always)
+    use_color=1 ;;
+  never)
+    use_color=0 ;;
+  auto)
+    # || -p "$fd"  # check if fd is a pipe, not a number!
+    [[ ! -t $fdn || "${TERM-}" == "dumb" ]] && use_color=0 || use_color=1
+    ;;
+  *)
+}
+
+if (( use_color)) {
+  if (( ! $+color )) {
+    autoload -Uz colors
+    colors
+  }
+
+  local _reset_color="$reset_color"
+
+  [[ "$arrow_bold" ]] && arrow_color="$fg_bold[$arrow_color]" || arrow_color="$fg[$arrow_color]"
+  [[ "$message_bold" ]] && message_color="$fg_bold[$message_color]" || message_color="$fg[$message_color]"
+  [[ "$label_bold" ]] && label_color="$fg_bold[$label_color]" || label_color="$fg[$label_color]"
+  file_color="$fg[yellow]"
+  nl_seperator="$arrow_color > $message_color"
+
+  [[ "$interlog" ]] && {
+    (( $+__interlog_color_cache )) || typeset -gA __interlog_color_cache
+
+    if (( ! ${+__interlog_color_cache[$interlog]} )) {
+      local interlog_crc="$(crc16 $interlog)"
+      __interlog_color_cache[$interlog]=$(( ( interlog_crc % 213) + 17 ))
+    }
+
+    interlog_color="\033[38;5;${__interlog_color_cache[$interlog]}m"
+  }
+} else {
+  # color is disabled
+  local \
+    _reset_color='' \
+    arrow_color='' \
+    message_color='' \
+    label_color='' \
+    interlog_color=''
+}
+
+if [[ "$file" ]] {
+  number_lines=1
+  if [[ !"$message" ]] {
+    message="$file_color$file$_reset_color"
+    file_only=1
+  }
+  file_lines="$(cat "$file" )"
+  message="$message\n${file_lines%%[[:blank:]]##}"
+}
+
+if (( number_lines )) {
+  message=( "${(f)message}" )
+  local numbered_lines="$(echo ${message[2,-1]} | nl -v$((file_only?1:2)) -ba -w4 -s$nl_seperator)"
+  message="${message[1]}\n$numbered_lines"
+}
+
+
+if [[ ! "$no_arrow" ]] {
+  to_print=("$to_print" "$arrow_color${arrow}$_reset_color")
+}
+
+if [[ "$icon" ]] {
+  to_print=("$to_print" "$icon")
+}
+
+if [[ "$interlog" ]] {
+  to_print=("$to_print" "$interlog_color\[$interlog\]$_reset_color")
+}
+
+if [[ "$message" ]] {
+  to_print=("$to_print" "$message_color${(j:\n:)message}$_reset_color")
+}
+
+if [[ "$label" ]] {
+  if [[ "$label_justify" =~ "^([0-9]+)$" ]] {
+    label_justify="(r:${match[2]}:: :)"
+  } elif [[ "$label_justify" =~ "^([r|l]):?([0-9]+)$" ]] {
+    label_justify="(${match[1]}:${match[2]}:: :)"
+  } elif [[ "$label_justify" =~ "^([r|l]):?([0-9]+):?(.*)$" ]] {
+    label_justify="(${match[1]}:${match[2]}::${match[3]}:)"
+  }
+  to_print=("$label_color"${(e)"${(e)_label}"}"$_reset_color" "$to_print")
+}
+
+message="${(j: :)to_print}"
+print -u$fdn "${(j: :)to_print}"

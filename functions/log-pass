@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt localoptions noxtrace
+autoload -Uz colors
+
+zparseopts -D -E -- -status-word:=word
+
+log-line --arrow "$fg[magenta][$fg[green]${word[2]:-" OK "}$fg[magenta]]" --color white "$@"

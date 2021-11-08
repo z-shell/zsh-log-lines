@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt localoptions noxtrace
+
+log-line --fd 1 --color white --decor '▶' "$@"

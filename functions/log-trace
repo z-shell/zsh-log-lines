@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt localoptions noxtrace
+
+if (( !${__quiet__:=0} && ( ${__verbose__:=0} >= 3 || ${__trace__:=0} || ${__trace__[1]:=0} ) )) ; then
+    log-line --color grey --decor '▶' "$@" || true
+fi

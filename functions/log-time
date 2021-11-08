@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+# Disable xtrace as it would mangle the output.
+setopt localoptions noxtrace
+
+function log-time() {
+  ((
+    !${__quiet__:=0} &&
+    ${__debug__:=0} ||
+    ${__verbose__:=0} >= 1 ||
+    ${__print__:=0}
+  )) && time $@ || $@
+}
