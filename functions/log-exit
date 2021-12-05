@@ -4,12 +4,12 @@ setopt localoptions noxtrace
 
 if [[ "$1" =~ "[0-9]+" ]] { __exit_status__=$1 ; shift } else { __exit_status__=1 }
 if (( $__exit_status__ == 0 )) {
-    cmd=(--info)
-    log-info "$@"
+  cmd=(--info)
+  log-info "$@"
 } else {
-    log-debug "[${functrace}]"
-    log-error "$@"
-    log-debug "  > status: $__exit_status__"
+  log-debug "[${functrace}]"
+  log-error "$@"
+  log-debug "  > status: $__exit_status__"
 }
 
 (( $SHLVL >= 2 )) && exit $__exit_status__ || kill -INT $$

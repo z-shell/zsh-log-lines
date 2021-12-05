@@ -2,6 +2,6 @@
 # Disable xtrace as it would mangle the output.
 setopt localoptions noxtrace
 
-if (( !${__quiet__:=0} && ( ${__debug__:-0} || ${__debug__[1]:-0} || ${__verbose__:=0} >= 2 ) )) ; then
-    log-line --color grey --decor '▶' "$@"
+if ((!${__quiet__:=0} && (${__debug__:-0} || ${__debug__[1]:-0} || ${__verbose__:=0} >= 2))); then
+  log-line --color grey --decor '▶' "$@"
 fi

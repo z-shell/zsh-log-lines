@@ -3,10 +3,5 @@
 
 setopt localoptions noxtrace
 
-((
-  !${__quiet__:=0} &&
-  ${__debug__:=0} ||
-  ${__info__:=0} ||
-  ${__verbose__:=0} >= 1 ||
-  ${__print__:=0}
-)) && log-line --color white --decor 'ℹ' "$@" || true
+((!${__quiet__:=0} && ${__debug__:=0} || ${__info__:=0} || ${__verbose__:=0} >= 1 || ${__print__:=0})) &&
+  log-line --color white --decor 'ℹ' "$@" || true

@@ -1,27 +1,23 @@
 #!/usr/bin/env zsh
-local \
-    ret_status="$status"
+local ret_status="$status"
 
-zparseopts -D -E -- \
-    -zero:=zero_word \
-    -nonzero:=nonzero_word \
-    -invert=invert
+zparseopts -D -E -- -zero:=zero_word -nonzero:=nonzero_word -invert=invert
 
 
 if (( !invert )) {
-    zero_cmd=log-ok
-    nonzero_cmd=log-fail
+  zero_cmd=log-ok
+  nonzero_cmd=log-fail
 } else {
-    zero_cmd=log-fail
-    nonzero_cmd=log-ok
+  zero_cmd=log-fail
+  nonzero_cmd=log-ok
 }
 
 if (( ret_status == 0 )) {
-    log_cmd="$zero_cmd"
-    word_arg="${zero_word[2]:-" OK "}"
+  log_cmd="$zero_cmd"
+  word_arg="${zero_word[2]:-" OK "}"
 } else {
-    log_cmd="$nonzero_cmd"
-    word_arg="${nonzero_word[2]:-"FAIL"}"
+  log_cmd="$nonzero_cmd"
+  word_arg="${nonzero_word[2]:-"FAIL"}"
 }
 
 $log_cmd --status-word "${word_arg[1,4]}" "$@"

@@ -2,4 +2,4 @@
 # Disable xtrace as it would mangle the output.
 setopt localoptions noxtrace
 
-(( !${__quiet__:=0} )) && log-line --color yellow --decor '⚠' --decor-bold "$@"
+((!${__quiet__:=0})) && log-line --color yellow --decor '⚠' --decor-bold "$@"

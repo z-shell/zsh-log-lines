@@ -2,33 +2,31 @@
 # Disable xtrace as it would mangle the output.
 setopt localoptions noxtrace
 
-zparseopts -D -E -- \
-    -no-exit=no_exit
+zparseopts -D -E -- -no-exit=no_exit
 
 trap 'finish' EXIT
 function finish() {
-    _exit_code=$?
-    if [[ -z "$no_exit" ]] {
-        if (( ! _exit_code )) {
-            cmd=( log-debug )
-        } else {
-            cmd=( log-error )
-        }
-        $cmd --arrow "    > $_pid" "$_exit_code"
+  _exit_code=$?
+  if [[ -z "$no_exit" ]] {
+    if (( ! _exit_code )) {
+      cmd=( log-debug )
+    } else {
+      cmd=( log-error )
     }
+    $cmd --arrow "    > $_pid" "$_exit_code"
+  }
 }
 
 curl_args="$@"
 while $curl_args do
-    op=${curl_args[1]}
-    curl_args=(${curl_args:1})
-
-    case $op in
-        -H=*|--header=*)
-        ;;
-        -H*|--header*)
-        ;;
-    esac
+  op=${curl_args[1]}
+  curl_args=(${curl_args:1})
+  case $op in
+    -H=*|--header=*)
+    ;;
+    -H*|--header*)
+    ;;
+  esac
 done
 # very silly work to get a cmd that is quoted properly
 log-debug --arrow "  ==> $$" "\`${(q)${(q)@}}\`"

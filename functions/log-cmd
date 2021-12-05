@@ -2,10 +2,7 @@
 # Disable xtrace as it would mangle the output.
 setopt localoptions noxtrace
 
-zparseopts -D -E -- \
-    -no-exit=no_exit \
-    p=__print__ -print=__print__ \
-    l=__line__ -line=__line__
+zparseopts -D -E -- -no-exit=no_exit p=__print__ -print=__print__ l=__line__ -line=__line__
 
 log_cmd=( log-info )
 [[ "$__print__" ]] && log_cmd=( log-print )
@@ -13,16 +10,16 @@ log_cmd=( log-info )
 
 trap 'finish $$ $?' EXIT
 function finish() {
-    _pid=$1
-    _exit_code=$2
-    if [[ -z "$no_exit" ]] {
-        local log_cmd_args
-        if (( !! _exit_code )) {
-            log_cmd_args=( --color 'red' )
-        }
-        $log_cmd $log_cmd_args --arrow "    < $_pid" "$_exit_code"
+  _pid=$1
+  _exit_code=$2
+  if [[ -z "$no_exit" ]] {
+    local log_cmd_args
+    if (( !! _exit_code )) {
+      log_cmd_args=( --color 'red' )
     }
-    return $_exit_code
+    $log_cmd $log_cmd_args --arrow "    < $_pid" "$_exit_code"
+  }
+  return $_exit_code
 }
 
 $log_cmd --arrow "  ==> $$" "'${(q)${(q)@}}\'"
