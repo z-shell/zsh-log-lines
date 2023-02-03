@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Disable xtrace as it would mangle the output.
-setopt localoptions noxtrace
+builtin setopt local_options no_xtrace typeset_silent
 
 function log-time() {
   ((!\

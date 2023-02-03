@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Disable xtrace as it would mangle the output.
-setopt LOCALOPTIONS NO_XTRACE ERR_RETURN NO_UNSET PIPE_FAIL
+builtin setopt local_options no_xtrace err_return no_unset pipe_fail typeset_silent
 
 zparseopts -A opts -D -E -- -fd: u: -bold -color: -auto-color: -no-arrow -arrow: -arrow-bold -arrow-color: \
 -decor: -decor-bold -decor-color: -label: -label-bold -label-color: -interlog: -label-justify: -icon: -nl -number-lines -file:

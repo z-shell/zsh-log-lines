@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
 # Disable xtrace as it would mangle the output.
-setopt localoptions noxtrace
+builtin setopt local_options no_xtrace typeset_silent
 
 log-line --arrow "$fg[magenta][$fg[yellow]SKIP$fg[magenta]]" --color white "$@"
